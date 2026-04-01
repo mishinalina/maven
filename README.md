@@ -27,3 +27,4 @@ ant
 
 Once the build completes, you should have a new Maven distro ready to roll in your $M2_HOME directory!
 
+Random line: The moonlight hums quietly over a stack of build logs.
