@@ -49,6 +49,8 @@ public class VersionRangeTest
 
     private static final String CHECK_SELECTED_VERSION = "check selected version";
 
+    private static final String CHECK_SYMMETRIC_RESTRICTIONS = "check symmetric restrictions";
+
     public void testRange()
         throws InvalidVersionSpecificationException, OverConstrainedVersionException
     {
@@ -654,6 +656,51 @@ public class VersionRangeTest
         assertEquals( CHECK_NUM_RESTRICTIONS, 0, restrictions.size() );
     }
 
+    public void testIntersectionsWithReversedRestrictions()
+        throws InvalidVersionSpecificationException
+    {
+        String[][] versionSpecs = {
+            { "[1.0,)", "1.1" },
+            { "[1.1,)", "1.1" },
+            { "[1.1]", "1.1" },
+            { "(1.1,)", "1.1" },
+            { "[1.2,)", "1.1" },
+            { "(,1.2]", "1.1" },
+            { "(,1.1]", "1.1" },
+            { "(,1.1)", "1.1" },
+            { "(,1.0]", "1.1" },
+            { "(,1.0], [1.1,)", "1.2" },
+            { "(,1.0], [1.1,)", "1.0.5" },
+            { "(,1.1), (1.1,)", "1.1" },
+            { "[1.1,1.3]", "(1.1,)" },
+            { "(,1.3)", "[1.2,1.3]" },
+            { "[1.1,1.3]", "[1.2,)" },
+            { "(,1.3]", "[1.2,1.4]" },
+            { "(1.2,1.3]", "[1.1,1.4]" },
+            { "(1.2,1.3)", "[1.1,1.4]" },
+            { "[1.2,1.3)", "[1.1,1.4]" },
+            { "[1.0,1.1]", "[1.1,1.4]" },
+            { "[1.0,1.1)", "[1.1,1.4]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.1]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.4]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.1,1.4]" },
+            { "[1.0,1.2),(1.3,1.5]", "[1.1,1.4]" },
+            { "[1.0,1.2],[1.3,1.5]", "(1.1,1.4)" },
+            { "[1.0,1.2),(1.3,1.5]", "(1.1,1.4)" },
+            { "(,1.1),(1.4,)", "[1.1,1.4]" },
+            { "(,1.1],[1.4,)", "(1.1,1.4)" },
+            { "[,1.1],[1.4,]", "[1.2,1.3]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.1,1.4],[1.6,]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.1,1.4],[1.5,]" },
+            { "[1.0,1.2],[1.3,1.7]", "[1.1,1.4],[1.5,1.6]" }
+        };
+
+        for ( String[] testCase : versionSpecs )
+        {
+            assertSymmetricRestrictions( testCase[0], testCase[1] );
+        }
+    }
+
     public void testReleaseRangeBoundsContainsSnapshots()
         throws InvalidVersionSpecificationException
     {
@@ -676,6 +723,18 @@ public class VersionRangeTest
 
         assertTrue( range.containsVersion( new DefaultArtifactVersion( "1.0-SNAPSHOT" ) ) );
         assertTrue( range.containsVersion( new DefaultArtifactVersion( "1.1-SNAPSHOT" ) ) );
+    }
+
+    private void assertSymmetricRestrictions( String firstVersionSpec, String secondVersionSpec )
+        throws InvalidVersionSpecificationException
+    {
+        VersionRange firstRange = VersionRange.createFromVersionSpec( firstVersionSpec );
+        VersionRange secondRange = VersionRange.createFromVersionSpec( secondVersionSpec );
+
+        VersionRange firstRestricted = firstRange.restrict( secondRange );
+        VersionRange secondRestricted = secondRange.restrict( firstRange );
+
+        assertEquals( CHECK_SYMMETRIC_RESTRICTIONS, firstRestricted.getRestrictions(), secondRestricted.getRestrictions() );
     }
 
     public void testSnapshotSoftVersionCanContainSnapshot()
