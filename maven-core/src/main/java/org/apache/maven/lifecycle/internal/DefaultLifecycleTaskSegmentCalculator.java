@@ -70,12 +70,11 @@ public class DefaultLifecycleTaskSegmentCalculator
         MojoNotFoundException, NoPluginFoundForPrefixException, InvalidPluginDescriptorException,
         PluginVersionResolutionException, LifecyclePhaseNotFoundException, LifecycleNotFoundException
     {
-
         MavenProject rootProject = session.getTopLevelProject();
 
         List<String> tasks = session.getGoals();
 
-        if ( tasks == null || tasks.isEmpty() )
+        if ( ( tasks == null || tasks.isEmpty() ) && rootProject != null )
         {
             if ( !StringUtils.isEmpty( rootProject.getDefaultGoal() ) )
             {
@@ -91,6 +90,11 @@ public class DefaultLifecycleTaskSegmentCalculator
         MojoNotFoundException, NoPluginFoundForPrefixException, InvalidPluginDescriptorException,
         PluginVersionResolutionException
     {
+        if ( tasks == null || tasks.isEmpty() )
+        {
+            return new ArrayList<TaskSegment>( 0 );
+        }
+
         List<TaskSegment> taskSegments = new ArrayList<TaskSegment>( tasks.size() );
 
         TaskSegment currentSegment = null;
