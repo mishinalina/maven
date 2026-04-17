@@ -654,6 +654,63 @@ public class VersionRangeTest
         assertEquals( CHECK_NUM_RESTRICTIONS, 0, restrictions.size() );
     }
 
+    /**
+     * Verifies that intersecting two version ranges produces the same restriction list
+     * regardless of which range is the receiver (symmetry).
+     * <p>
+     * The intersection algorithm had a bug: when two restrictions share the same upper
+     * bound, only the first iterator was advanced instead of both, producing extra
+     * spurious degenerate restrictions and breaking symmetry.
+     */
+    public void testIntersectionSymmetry()
+        throws InvalidVersionSpecificationException
+    {
+        // Bug case: adjacent ranges with shared upper bound trigger the asymmetry
+        assertRestrictionsSymmetric( "[1.0,1.2],[1.2,1.4]", "[1.1,1.2],[1.3,1.5]" );
+
+        // All multi-range cases from testIntersections() reversed
+        assertRestrictionsSymmetric( "[1.1,1.3]", "(1.1,)" );
+        assertRestrictionsSymmetric( "(,1.3)", "[1.2,1.3]" );
+        assertRestrictionsSymmetric( "[1.1,1.3]", "[1.2,)" );
+        assertRestrictionsSymmetric( "(,1.3]", "[1.2,1.4]" );
+        assertRestrictionsSymmetric( "(1.2,1.3]", "[1.1,1.4]" );
+        assertRestrictionsSymmetric( "(1.2,1.3)", "[1.1,1.4]" );
+        assertRestrictionsSymmetric( "[1.2,1.3)", "[1.1,1.4]" );
+        assertRestrictionsSymmetric( "[1.0,1.1]", "[1.1,1.4]" );
+        assertRestrictionsSymmetric( "[1.0,1.1)", "[1.1,1.4]" );
+        assertRestrictionsSymmetric( "[1.0,1.2],[1.3,1.5]", "[1.1,1.4]" );
+        assertRestrictionsSymmetric( "[1.0,1.2),(1.3,1.5]", "[1.1,1.4]" );
+        assertRestrictionsSymmetric( "[1.0,1.2],[1.3,1.5]", "(1.1,1.4)" );
+        assertRestrictionsSymmetric( "[1.0,1.2),(1.3,1.5]", "(1.1,1.4)" );
+        assertRestrictionsSymmetric( "(,1.1),(1.4,)", "[1.1,1.4]" );
+        assertRestrictionsSymmetric( "(,1.1],[1.4,)", "(1.1,1.4)" );
+        assertRestrictionsSymmetric( "[1.0,1.2],[1.3,1.5]", "[1.1,1.4],[1.6,]" );
+        assertRestrictionsSymmetric( "[1.0,1.2],[1.3,1.5]", "[1.1,1.4],[1.5,]" );
+        assertRestrictionsSymmetric( "[1.0,1.2],[1.3,1.7]", "[1.1,1.4],[1.5,1.6]" );
+    }
+
+    private void assertRestrictionsSymmetric( String spec1, String spec2 )
+        throws InvalidVersionSpecificationException
+    {
+        VersionRange r1 = VersionRange.createFromVersionSpec( spec1 );
+        VersionRange r2 = VersionRange.createFromVersionSpec( spec2 );
+        List<Restriction> forward = r1.restrict( r2 ).getRestrictions();
+        List<Restriction> reversed = r2.restrict( r1 ).getRestrictions();
+        assertEquals( "restriction count must be symmetric for (" + spec1 + ") vs (" + spec2 + ")",
+                      forward.size(), reversed.size() );
+        for ( int i = 0; i < forward.size(); i++ )
+        {
+            Restriction f = forward.get( i );
+            Restriction rv = reversed.get( i );
+            assertEquals( "lower bound [" + i + "] must be symmetric", f.getLowerBound(), rv.getLowerBound() );
+            assertEquals( "lower inclusive [" + i + "] must be symmetric",
+                          f.isLowerBoundInclusive(), rv.isLowerBoundInclusive() );
+            assertEquals( "upper bound [" + i + "] must be symmetric", f.getUpperBound(), rv.getUpperBound() );
+            assertEquals( "upper inclusive [" + i + "] must be symmetric",
+                          f.isUpperBoundInclusive(), rv.isUpperBoundInclusive() );
+        }
+    }
+
     public void testReleaseRangeBoundsContainsSnapshots()
         throws InvalidVersionSpecificationException
     {

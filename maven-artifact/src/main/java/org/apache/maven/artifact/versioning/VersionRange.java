@@ -398,29 +398,66 @@ public class VersionRange
                         restrictions.add( new Restriction( lower, lowerInclusive, upper, upperInclusive ) );
                     }
 
-                    //noinspection ObjectEquality
-                    if ( upper == res2.getUpperBound() )
+                    // Advance the iterator(s) whose restriction ended at the computed upper
+                    // boundary. When both restrictions share the same upper bound, advance
+                    // both so that neither is processed again against already-consumed ranges.
+                    if ( res1.getUpperBound() == null || res2.getUpperBound() == null )
                     {
-                        // advance res2
-                        if ( i2.hasNext() )
+                        // One side is unbounded (null); the bounded side set the boundary.
+                        //noinspection ObjectEquality
+                        if ( upper == res2.getUpperBound() )
                         {
-                            res2 = i2.next();
+                            // res2's upper bound (null) was used – advance res2
+                            if ( i2.hasNext() )
+                            {
+                                res2 = i2.next();
+                            }
+                            else
+                            {
+                                done = true;
+                            }
                         }
                         else
                         {
-                            done = true;
+                            // res1's upper bound (null) was used – advance res1
+                            if ( i1.hasNext() )
+                            {
+                                res1 = i1.next();
+                            }
+                            else
+                            {
+                                done = true;
+                            }
                         }
                     }
                     else
                     {
-                        // advance res1
-                        if ( i1.hasNext() )
+                        // Both bounds are non-null; advance whichever restriction(s) ended
+                        // at the boundary. When equal, advance both to prevent re-processing.
+                        int upperComparison = res1.getUpperBound().compareTo( res2.getUpperBound() );
+                        if ( upperComparison <= 0 )
                         {
-                            res1 = i1.next();
+                            // res1 ended at or before res2 – advance res1
+                            if ( i1.hasNext() )
+                            {
+                                res1 = i1.next();
+                            }
+                            else
+                            {
+                                done = true;
+                            }
                         }
-                        else
+                        if ( upperComparison >= 0 && !done )
                         {
-                            done = true;
+                            // res2 ended at or before res1 – advance res2
+                            if ( i2.hasNext() )
+                            {
+                                res2 = i2.next();
+                            }
+                            else
+                            {
+                                done = true;
+                            }
                         }
                     }
                 }
