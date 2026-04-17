@@ -686,6 +686,82 @@ public class VersionRangeTest
         assertTrue( range.containsVersion( new DefaultArtifactVersion( "1.0-SNAPSHOT" ) ) );
     }
 
+    public void testIntersectionSymmetryWithNullBounds()
+        throws InvalidVersionSpecificationException
+    {
+        // Regression test: when both restrictions have null upper (or lower) bounds but different
+        // *BoundInclusive values, the intersection must be structurally identical regardless of
+        // operand order.
+        //
+        // Null upper bounds: [1.0,) has upperBoundInclusive=false; [1.5,] has upperBoundInclusive=true.
+        assertSymmetricRestrictions( "[1.0,)", "[1.5,]" );
+        assertSymmetricRestrictions( "[1.0,]", "[1.5,)" );
+        assertSymmetricRestrictions( "[1.0,]", "[1.5,]" );
+        //
+        // Null lower bounds: (,1.0] has lowerBoundInclusive=false; [,1.5] has lowerBoundInclusive=true.
+        assertSymmetricRestrictions( "(,1.5]", "[,1.0]" );
+        assertSymmetricRestrictions( "[,1.5]", "(,1.0]" );
+        assertSymmetricRestrictions( "[,1.5]", "[,1.0]" );
+    }
+
+    public void testIntersectionsWithReversedRestrictions()
+        throws InvalidVersionSpecificationException
+    {
+        String[][] versionSpecs = {
+            { "[1.0,)", "1.1" },
+            { "[1.1,)", "1.1" },
+            { "[1.1]", "1.1" },
+            { "(1.1,)", "1.1" },
+            { "[1.2,)", "1.1" },
+            { "(,1.2]", "1.1" },
+            { "(,1.1]", "1.1" },
+            { "(,1.1)", "1.1" },
+            { "(,1.0]", "1.1" },
+            { "(,1.0], [1.1,)", "1.2" },
+            { "(,1.0], [1.1,)", "1.0.5" },
+            { "(,1.1), (1.1,)", "1.1" },
+            { "[1.1,1.3]", "(1.1,)" },
+            { "(,1.3)", "[1.2,1.3]" },
+            { "[1.1,1.3]", "[1.2,)" },
+            { "(,1.3]", "[1.2,1.4]" },
+            { "(1.2,1.3]", "[1.1,1.4]" },
+            { "(1.2,1.3)", "[1.1,1.4]" },
+            { "[1.2,1.3)", "[1.1,1.4]" },
+            { "[1.0,1.1]", "[1.1,1.4]" },
+            { "[1.0,1.1)", "[1.1,1.4]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.1]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.4]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.1,1.4]" },
+            { "[1.0,1.2),(1.3,1.5]", "[1.1,1.4]" },
+            { "[1.0,1.2],[1.3,1.5]", "(1.1,1.4)" },
+            { "[1.0,1.2),(1.3,1.5]", "(1.1,1.4)" },
+            { "(,1.1),(1.4,)", "[1.1,1.4]" },
+            { "(,1.1],[1.4,)", "(1.1,1.4)" },
+            { "[,1.1],[1.4,]", "[1.2,1.3]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.1,1.4],[1.6,]" },
+            { "[1.0,1.2],[1.3,1.5]", "[1.1,1.4],[1.5,]" },
+            { "[1.0,1.2],[1.3,1.7]", "[1.1,1.4],[1.5,1.6]" }
+        };
+
+        for ( String[] testCase : versionSpecs )
+        {
+            assertSymmetricRestrictions( testCase[0], testCase[1] );
+        }
+    }
+
+    private void assertSymmetricRestrictions( String firstVersionSpec, String secondVersionSpec )
+        throws InvalidVersionSpecificationException
+    {
+        VersionRange firstRange = VersionRange.createFromVersionSpec( firstVersionSpec );
+        VersionRange secondRange = VersionRange.createFromVersionSpec( secondVersionSpec );
+
+        VersionRange firstRestricted = firstRange.restrict( secondRange );
+        VersionRange secondRestricted = secondRange.restrict( firstRange );
+
+        assertEquals( "Restrictions should be symmetric for [" + firstVersionSpec + "] and [" + secondVersionSpec + "]",
+            firstRestricted.getRestrictions(), secondRestricted.getRestrictions() );
+    }
+
     private void checkInvalidRange( String version )
     {
         try

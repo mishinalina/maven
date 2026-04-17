@@ -328,7 +328,12 @@ public class VersionRange
                     boolean upperInclusive;
 
                     // overlaps
-                    if ( res1.getLowerBound() == null )
+                    if ( res1.getLowerBound() == null && res2.getLowerBound() == null )
+                    {
+                        lower = null;
+                        lowerInclusive = false;
+                    }
+                    else if ( res1.getLowerBound() == null )
                     {
                         lower = res2.getLowerBound();
                         lowerInclusive = res2.isLowerBoundInclusive();
@@ -358,7 +363,12 @@ public class VersionRange
                         }
                     }
 
-                    if ( res1.getUpperBound() == null )
+                    if ( res1.getUpperBound() == null && res2.getUpperBound() == null )
+                    {
+                        upper = null;
+                        upperInclusive = false;
+                    }
+                    else if ( res1.getUpperBound() == null )
                     {
                         upper = res2.getUpperBound();
                         upperInclusive = res2.isUpperBoundInclusive();
