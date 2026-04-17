@@ -77,7 +77,7 @@ public class DefaultLifecycleTaskSegmentCalculator
 
         if ( tasks == null || tasks.isEmpty() )
         {
-            if ( !StringUtils.isEmpty( rootProject.getDefaultGoal() ) )
+            if ( rootProject != null && !StringUtils.isEmpty( rootProject.getDefaultGoal() ) )
             {
                 tasks = Arrays.asList( StringUtils.split( rootProject.getDefaultGoal() ) );
             }
@@ -91,6 +91,11 @@ public class DefaultLifecycleTaskSegmentCalculator
         MojoNotFoundException, NoPluginFoundForPrefixException, InvalidPluginDescriptorException,
         PluginVersionResolutionException
     {
+        if ( tasks == null || tasks.isEmpty() )
+        {
+            return new ArrayList<TaskSegment>();
+        }
+
         List<TaskSegment> taskSegments = new ArrayList<TaskSegment>( tasks.size() );
 
         TaskSegment currentSegment = null;
