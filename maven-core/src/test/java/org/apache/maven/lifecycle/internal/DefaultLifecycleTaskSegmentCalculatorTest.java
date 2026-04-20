@@ -139,7 +139,7 @@ public class DefaultLifecycleTaskSegmentCalculatorTest
         throws Exception
     {
         MavenProject project = new MavenProject();
-        project.setDefaultGoal( "install" );
+        project.getBuild().setDefaultGoal( "install" );
 
         MavenSession session = buildSession( Collections.<String>emptyList(), project );
 
@@ -157,7 +157,7 @@ public class DefaultLifecycleTaskSegmentCalculatorTest
         throws Exception
     {
         MavenProject project = new MavenProject();
-        project.setDefaultGoal( "install" );
+        project.getBuild().setDefaultGoal( "install" );
 
         MavenSession session = buildSession( Arrays.asList( "clean" ), project );
 
