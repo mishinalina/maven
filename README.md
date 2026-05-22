@@ -27,3 +27,5 @@ ant
 
 Once the build completes, you should have a new Maven distro ready to roll in your $M2_HOME directory!
 
+This project follows semantic versioning and welcomes community contributions.
+
