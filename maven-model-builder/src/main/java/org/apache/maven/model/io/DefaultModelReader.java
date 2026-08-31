@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.URL;
 import java.util.Map;
 
 import org.apache.maven.model.InputSource;
@@ -94,6 +95,17 @@ public class DefaultModelReader
         {
             IOUtil.close( input );
         }
+    }
+
+    public Model read( URL input, Map<String, ?> options )
+        throws IOException
+    {
+        if ( input == null )
+        {
+            throw new IllegalArgumentException( "input URL missing" );
+        }
+
+        return read( input.openStream(), options );
     }
 
     private boolean isStrict( Map<String, ?> options )
