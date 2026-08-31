@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.net.URL;
 import java.util.Map;
 
 import org.apache.maven.model.Model;
@@ -84,6 +85,18 @@ public interface ModelReader
      * @throws ModelParseException If the input format could not be parsed.
      */
     Model read( InputStream input, Map<String, ?> options )
+        throws IOException, ModelParseException;
+
+    /**
+     * Reads the model from the specified URL.
+     *
+     * @param input The URL to deserialize the model from, must not be {@code null}.
+     * @param options The options to use for deserialization, may be {@code null} to use the default values.
+     * @return The deserialized model, never {@code null}.
+     * @throws IOException If the model could not be deserialized.
+     * @throws ModelParseException If the input format could not be parsed.
+     */
+    Model read( URL input, Map<String, ?> options )
         throws IOException, ModelParseException;
 
 }
