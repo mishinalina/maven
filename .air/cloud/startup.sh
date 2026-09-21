@@ -239,6 +239,13 @@ warmup_build() {
     log "NOTE: some modules did not build or test cleanly (known: maven-core test"
     log "NOTE: sources reference MavenProject.setDefaultGoal, which main does not define)."
   fi
+
+  # maven-compat and maven-embedder sit downstream of maven-core, so the reactor pass
+  # above skips them whenever maven-core fails. Build them on their own against the
+  # jars the first pass installed, so their test dependencies are cached as well.
+  log "priming the maven-compat / maven-embedder tests (advisory) ..."
+  mvn -B -pl maven-compat,maven-embedder test \
+    || log "NOTE: maven-compat / maven-embedder did not test cleanly"
 }
 
 # --------------------------------------------------------------------------------
