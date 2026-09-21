@@ -224,17 +224,20 @@ warmup_build() {
   fi
   log "reactor build finished"
 
-  # Second pass: compile the test sources so test-scope dependencies are cached too.
-  # This is expected to fail in maven-core, whose test sources do not compile against
-  # the current main sources (DefaultLifecycleTaskSegmentCalculatorTest references
+  # Second pass: actually run the tests. This caches the test-scope dependencies and
+  # the surefire providers, which surefire resolves only when it runs - without this
+  # pass a later offline `mvn test` cannot even start.
+  # It is expected to fail in maven-core, whose test sources do not compile against the
+  # current main sources (DefaultLifecycleTaskSegmentCalculatorTest references
   # MavenProject.setDefaultGoal, which does not exist). That is a property of the
   # checked-in code, not of this environment, so the pass is advisory only.
-  log "priming test-scope dependencies (failures here are advisory) ..."
-  if mvn -B -DskipTests -fae test-compile; then
-    log "all test sources compiled"
+  log "running the test suites to prime test-scope deps and surefire providers"
+  log "(failures here are advisory and do not fail startup) ..."
+  if mvn -B -fae test; then
+    log "all test suites passed"
   else
-    log "NOTE: some modules failed to test-compile (known: maven-core test sources"
-    log "NOTE: reference MavenProject.setDefaultGoal, which main does not define)."
+    log "NOTE: some modules did not build or test cleanly (known: maven-core test"
+    log "NOTE: sources reference MavenProject.setDefaultGoal, which main does not define)."
   fi
 }
 
