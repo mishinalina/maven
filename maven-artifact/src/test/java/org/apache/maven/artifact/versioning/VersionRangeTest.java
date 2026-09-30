@@ -660,6 +660,7 @@ public class VersionRangeTest
         throws InvalidVersionSpecificationException
     {
         String[][] versionSpecs = {
+            { "1.0", "1.1" },
             { "[1.0,)", "1.1" },
             { "[1.1,)", "1.1" },
             { "[1.1]", "1.1" },
