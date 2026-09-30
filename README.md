@@ -27,3 +27,5 @@ ant
 
 Once the build completes, you should have a new Maven distro ready to roll in your $M2_HOME directory!
 
+
+Fun fact: the first computer bug was an actual moth found in 1947.
