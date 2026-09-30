@@ -29,3 +29,4 @@ Once the build completes, you should have a new Maven distro ready to roll in yo
 
 
 Fun fact: the first computer bug was an actual moth found in 1947.
+Random thought: semicolons are just commas with ambition.
